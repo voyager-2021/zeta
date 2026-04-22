@@ -69,24 +69,19 @@ impl WriterBuilder {
 
     /// Set compression algorithm.
     pub fn compression<C: CompressionAlgorithm + 'static>(mut self, algo: C) -> Self {
-        self.config.compression = Some(Box::new(algo));
+        self.config.compression_id = algo.id();
         self
     }
 
     /// Set compression by ID.
     pub fn compression_by_id(mut self, id: u16) -> Self {
-        use crate::registry::global_registry;
-        if let Some(algo) = global_registry().compression.get(id) {
-            // Clone the algorithm (would need to implement Clone for dyn trait)
-            // For now, create a new instance based on ID
-            self.config.compression = create_compression_algorithm(id);
-        }
+        self.config.compression_id = id;
         self
     }
 
     /// Set encryption algorithm and key.
     pub fn encryption<E: EncryptionAlgorithm + 'static>(mut self, algo: E, key: Vec<u8>) -> Self {
-        self.config.encryption = Some(Box::new(algo));
+        self.config.encryption_id = algo.id();
         self.config.key = Some(key);
         self.flags.set(ZetaFlags::ENCRYPTED);
         self
@@ -94,12 +89,9 @@ impl WriterBuilder {
 
     /// Set encryption by ID.
     pub fn encryption_by_id(mut self, id: u16, key: Vec<u8>) -> Self {
-        use crate::registry::global_registry;
-        if let Some(algo) = global_registry().encryption.get(id) {
-            self.config.encryption = create_encryption_algorithm(id);
-            self.config.key = Some(key);
-            self.flags.set(ZetaFlags::ENCRYPTED);
-        }
+        self.config.encryption_id = id;
+        self.config.key = Some(key);
+        self.flags.set(ZetaFlags::ENCRYPTED);
         self
     }
 
@@ -179,7 +171,7 @@ mod tests {
             .create(cursor)
             .unwrap();
 
-        assert!(writer.config.compression.is_some());
+        assert!(writer.config.compression_id != 0);
     }
 
     #[test]

@@ -117,7 +117,7 @@ impl<W: Write + Seek> Writer<W> {
             .ok_or_else(|| Error::custom("No stream active"))?;
 
         // Get previous chunk data for delta encoding if enabled
-        let prev_data = if self.config.delta.is_some() && !state.chunks.is_empty() {
+        let prev_data = if self.config.delta_id != 0 && !state.chunks.is_empty() {
             // Note: In a real implementation, we'd need to store uncompressed data
             // for delta encoding. For now, we skip delta if we don't have it.
             None
@@ -130,24 +130,9 @@ impl<W: Write + Seek> Writer<W> {
             stream_id: state.stream_id,
             sequence: state.sequence,
             is_final,
-            compression_id: self
-                .config
-                .compression
-                .as_ref()
-                .map(|c| c.id())
-                .unwrap_or(0),
-            encryption_id: self
-                .config
-                .encryption
-                .as_ref()
-                .map(|e| e.id())
-                .unwrap_or(0),
-            hash_id: self
-                .config
-                .hash
-                .as_ref()
-                .map(|h| h.id())
-                .unwrap_or(0),
+            compression_id: self.config.compression_id,
+            encryption_id: self.config.encryption_id,
+            hash_id: self.config.hash_id,
         };
 
         // Encode chunk
@@ -221,7 +206,8 @@ impl<W: Write + Seek> Writer<W> {
     /// Finish writing and write footer.
     ///
     /// This writes the stream directory, index (if enabled), and footer.
-    pub fn finish(mut self) -> Result<()> {
+    /// Returns the underlying writer.
+    pub fn finish(mut self) -> Result<W> {
         // Finish any active stream
         self.finish_stream()?;
 
@@ -256,7 +242,7 @@ impl<W: Write + Seek> Writer<W> {
         self.inner.seek(SeekFrom::Start(0))?;
         self.header.serialize(&mut self.inner)?;
 
-        Ok(())
+        Ok(self.inner)
     }
 
     /// Compute SHA-256 hash of the file (excluding footer).

@@ -247,7 +247,7 @@ impl<R: Read + Seek> IndexedReader<R> {
         for seq in start.get()..=end.get() {
             match self.read_chunk(stream_id, ChunkSequence::new(seq)) {
                 Ok(result) => results.push(result),
-                Err(Error::custom(_)) => break,
+                Err(Error::Custom(_)) => break,
                 Err(e) => return Err(e),
             }
         }

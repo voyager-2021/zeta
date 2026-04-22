@@ -85,7 +85,9 @@ impl SignatureAlgorithm for Ed25519Signature {
             ));
         }
 
-        let signing_key = SigningKey::from_bytes(key);
+        let key_array: &[u8; 32] = key.try_into()
+            .map_err(|_| Error::InvalidSignature("Invalid key length".to_string()))?;
+        let signing_key = SigningKey::from_bytes(key_array);
         let signature = signing_key.sign(data);
         Ok(signature.to_bytes().to_vec())
     }
@@ -105,11 +107,14 @@ impl SignatureAlgorithm for Ed25519Signature {
             ));
         }
 
-        let verifying_key = VerifyingKey::from_bytes(key)
-            .map_err(|e| Error::InvalidSignature(format!("Invalid Ed25519 public key: {:?}", e)))?;
+        let key_array: &[u8; 32] = key.try_into()
+            .map_err(|_| Error::InvalidSignature("Invalid key length".to_string()))?;
+        let verifying_key = VerifyingKey::from_bytes(key_array)
+            .map_err(|_| Error::InvalidSignature("Invalid Ed25519 public key".to_string()))?;
 
-        let sig = EdSignature::from_bytes(signature)
-            .map_err(|e| Error::InvalidSignature(format!("Invalid Ed25519 signature: {:?}", e)))?;
+        let sig_array: &[u8; 64] = signature.try_into()
+            .map_err(|_| Error::InvalidSignature("Invalid signature length".to_string()))?;
+        let sig = EdSignature::from_bytes(sig_array);
 
         verifying_key
             .verify(data, &sig)
