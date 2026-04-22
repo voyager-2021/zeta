@@ -2,6 +2,7 @@
 
 use crate::error::{Error, Result};
 use crate::format::chunk::{ChunkHeader, ChunkInfo};
+use crate::format::Serialize;
 use crate::pipeline::{compute_chunk_flags, PipelineConfig};
 use crate::registry::global_registry;
 use crate::types::{ChunkFlags, ChunkSequence, StreamId};
@@ -88,10 +89,13 @@ impl ChunkEncoder {
         let mut processed_data = data.to_vec();
 
         // Step 1: Delta encoding (if enabled and base provided)
-        if let (Some(ref delta_algo), Some(base)) = (&self.config.delta, base_data) {
-            let delta_id = delta_algo.id();
-            processed_data = delta_algo.encode(base, data)?;
-            flags.set(ChunkFlags::DELTA_ENCODED);
+        if self.config.delta_id != 0 {
+            if let Some(base) = base_data {
+                if let Some(delta_algo) = registry.delta.get(self.config.delta_id) {
+                    processed_data = delta_algo.encode(base, data)?;
+                    flags.set(ChunkFlags::DELTA_ENCODED);
+                }
+            }
         }
 
         // Step 2: Compression
@@ -229,7 +233,7 @@ mod tests {
     #[test]
     fn test_chunk_encoder_with_compression() {
         let config = PipelineConfig::new()
-            .with_compression(Box::new(NoneCompression));
+            .with_compression(0); // 0 = NoneCompression
         let options = EncodeOptions::new(StreamId::new(1).unwrap(), ChunkSequence::new(0));
 
         let encoder = ChunkEncoder::new(config, options);

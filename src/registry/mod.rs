@@ -13,13 +13,13 @@ pub use compression::{Compression, CompressionAlgorithm};
 pub use delta::{Delta, DeltaAlgorithm};
 pub use encryption::{Encryption, EncryptionAlgorithm};
 pub use hash::{Hash, HashAlgorithm};
-pub use kdf::{Kdf, KdfAlgorithm};
+pub use kdf::{Kdf, KdfAlgorithm, KdfParams};
 pub use signature::{Signature, SignatureAlgorithm};
 
 use crate::error::Result;
 
 /// Trait for algorithms that can be registered by ID.
-pub trait Algorithm: Send + Sync {
+pub trait Algorithm: Send + Sync + std::fmt::Debug {
     /// Get the algorithm ID.
     fn id(&self) -> u16;
 
@@ -28,17 +28,17 @@ pub trait Algorithm: Send + Sync {
 }
 
 /// Registry for algorithms of a specific type.
-pub struct Registry<T: Algorithm> {
+pub struct Registry<T: Algorithm + ?Sized> {
     algorithms: Vec<Box<T>>,
 }
 
-impl<T: Algorithm> Default for Registry<T> {
+impl<T: Algorithm + ?Sized> Default for Registry<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T: Algorithm> Registry<T> {
+impl<T: Algorithm + ?Sized> Registry<T> {
     /// Create a new empty registry.
     pub fn new() -> Self {
         Self {
@@ -119,8 +119,6 @@ impl GlobalRegistry {
         self.compression.register(Box::new(LzmaCompression));
         self.compression.register(Box::new(SnappyCompression));
         self.compression.register(Box::new(Lzma2Compression));
-        #[cfg(feature = "lzo")]
-        self.compression.register(Box::new(LzoCompression));
 
         // Encryption
         self.encryption.register(Box::new(NoneEncryption));

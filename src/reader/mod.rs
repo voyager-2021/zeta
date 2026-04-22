@@ -12,7 +12,7 @@ use crate::error::{Error, Result};
 use crate::format::footer::Footer;
 use crate::format::header::FileHeader;
 use crate::format::stream_dir::{StreamDir, StreamEntry};
-use crate::format::Deserialize;
+use crate::format::{Deserialize, Serialize};
 use crate::types::StreamId;
 use std::io::{Read, Seek, SeekFrom};
 

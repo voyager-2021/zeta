@@ -47,6 +47,7 @@ pub enum Hash {
 }
 
 /// No hash (empty).
+#[derive(Debug)]
 pub struct NoneHash;
 
 impl Algorithm for NoneHash {
@@ -70,6 +71,7 @@ impl HashAlgorithm for NoneHash {
 }
 
 /// SHA-256 hash.
+#[derive(Debug)]
 pub struct Sha256Hash;
 
 impl Algorithm for Sha256Hash {
@@ -96,6 +98,7 @@ impl HashAlgorithm for Sha256Hash {
 }
 
 /// BLAKE2b hash (512-bit output).
+#[derive(Debug)]
 pub struct Blake2bHash;
 
 impl Algorithm for Blake2bHash {
@@ -122,6 +125,7 @@ impl HashAlgorithm for Blake2bHash {
 }
 
 /// SHA-512 hash.
+#[derive(Debug)]
 pub struct Sha512Hash;
 
 impl Algorithm for Sha512Hash {
@@ -148,6 +152,7 @@ impl HashAlgorithm for Sha512Hash {
 }
 
 /// SHA3-256 hash.
+#[derive(Debug)]
 pub struct Sha3_256Hash;
 
 impl Algorithm for Sha3_256Hash {
@@ -174,6 +179,7 @@ impl HashAlgorithm for Sha3_256Hash {
 }
 
 /// SHA3-512 hash.
+#[derive(Debug)]
 pub struct Sha3_512Hash;
 
 impl Algorithm for Sha3_512Hash {
@@ -200,6 +206,7 @@ impl HashAlgorithm for Sha3_512Hash {
 }
 
 /// BLAKE3 hash (256-bit output).
+#[derive(Debug)]
 pub struct Blake3Hash;
 
 impl Algorithm for Blake3Hash {
@@ -223,6 +230,7 @@ impl HashAlgorithm for Blake3Hash {
 }
 
 /// SHAKE256 extendable-output function.
+#[derive(Debug)]
 pub struct Shake256Hash;
 
 impl Algorithm for Shake256Hash {

@@ -4,7 +4,7 @@ use crate::error::{Error, Result};
 use crate::format::chunk::ChunkHeader;
 use crate::format::footer::Footer;
 use crate::format::header::FileHeader;
-use crate::format::Deserialize;
+use crate::format::{Deserialize, Serialize};
 use crate::pipeline::decoder::ChunkDecoder;
 use crate::pipeline::PipelineConfig;
 use crate::reader::VerificationResult;

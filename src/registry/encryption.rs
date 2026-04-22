@@ -34,6 +34,7 @@ pub enum Encryption {
 }
 
 /// No encryption (pass-through).
+#[derive(Debug)]
 pub struct NoneEncryption;
 
 impl Algorithm for NoneEncryption {
@@ -69,6 +70,7 @@ impl EncryptionAlgorithm for NoneEncryption {
 }
 
 /// AES-256-GCM encryption.
+#[derive(Debug)]
 pub struct Aes256GcmEncryption;
 
 impl Algorithm for Aes256GcmEncryption {
@@ -152,6 +154,7 @@ impl EncryptionAlgorithm for Aes256GcmEncryption {
 }
 
 /// ChaCha20-Poly1305 encryption.
+#[derive(Debug)]
 pub struct ChaCha20Poly1305Encryption;
 
 impl Algorithm for ChaCha20Poly1305Encryption {

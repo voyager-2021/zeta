@@ -23,6 +23,7 @@ pub enum Delta {
 }
 
 /// No delta encoding.
+#[derive(Debug)]
 pub struct NoneDelta;
 
 impl Algorithm for NoneDelta {
@@ -46,6 +47,7 @@ impl DeltaAlgorithm for NoneDelta {
 }
 
 /// Raw diff delta encoding (simple byte-level XOR difference).
+#[derive(Debug)]
 pub struct RawDiffDelta;
 
 impl Algorithm for RawDiffDelta {
@@ -90,6 +92,7 @@ impl DeltaAlgorithm for RawDiffDelta {
 }
 
 /// XOR delta encoding.
+#[derive(Debug)]
 pub struct XorDelta;
 
 impl Algorithm for XorDelta {

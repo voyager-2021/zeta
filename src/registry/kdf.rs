@@ -76,6 +76,7 @@ impl KdfParams {
 }
 
 /// No KDF (pass-through, requires key to be provided directly).
+#[derive(Debug)]
 pub struct NoneKdf;
 
 impl Algorithm for NoneKdf {
@@ -100,6 +101,7 @@ impl KdfAlgorithm for NoneKdf {
 }
 
 /// PBKDF2 key derivation.
+#[derive(Debug)]
 pub struct Pbkdf2Kdf;
 
 impl Algorithm for Pbkdf2Kdf {
@@ -138,6 +140,7 @@ impl KdfAlgorithm for Pbkdf2Kdf {
 }
 
 /// Argon2id key derivation.
+#[derive(Debug)]
 pub struct Argon2idKdf;
 
 impl Algorithm for Argon2idKdf {
@@ -158,9 +161,7 @@ impl KdfAlgorithm for Argon2idKdf {
             return Err(Error::crypto("Argon2id requires at least 16 bytes of salt"));
         }
 
-        // Convert salt to SaltString
-        let salt_str = SaltString::encode_b64(salt)
-            .map_err(|e| Error::crypto(format!("Failed to encode salt: {:?}", e)))?;
+        // Salt is used directly with hash_password_into
 
         // Configure Argon2
         let time_cost = if params.time_cost >= 2 { params.time_cost } else { 2 };
@@ -190,6 +191,7 @@ impl KdfAlgorithm for Argon2idKdf {
 }
 
 /// Scrypt key derivation.
+#[derive(Debug)]
 pub struct ScryptKdf;
 
 impl Algorithm for ScryptKdf {
@@ -204,7 +206,7 @@ impl Algorithm for ScryptKdf {
 
 impl KdfAlgorithm for ScryptKdf {
     fn derive(&self, password: &[u8], salt: &[u8], output_len: usize, params: &KdfParams) -> Result<Vec<u8>> {
-        use scrypt::{scrypt, ScryptParams};
+        use scrypt::scrypt;
 
         if salt.len() < 16 {
             return Err(Error::crypto("Scrypt requires at least 16 bytes of salt"));
@@ -212,14 +214,14 @@ impl KdfAlgorithm for ScryptKdf {
 
         // Calculate N = 2^time_cost (default 2^15 = 32768)
         let n_log2 = if params.time_cost >= 15 { params.time_cost } else { 15 };
-        let n = 1u64 << n_log2;
         let r = if params.memory_cost >= 8 { params.memory_cost as u32 } else { 8 };
         let p = if params.parallelism >= 1 { params.parallelism as u32 } else { 1 };
 
-        let scrypt_params = ScryptParams::new(
+        let scrypt_params = scrypt::Params::new(
             n_log2 as u8,
             r,
             p,
+            output_len,
         ).map_err(|e| Error::crypto(format!("Invalid scrypt params: {:?}", e)))?;
 
         let mut output = vec![0u8; output_len];
@@ -235,6 +237,7 @@ impl KdfAlgorithm for ScryptKdf {
 }
 
 /// HKDF key derivation.
+#[derive(Debug)]
 pub struct HkdfKdf;
 
 impl Algorithm for HkdfKdf {

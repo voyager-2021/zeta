@@ -34,6 +34,7 @@ pub enum Signature {
 }
 
 /// No signature.
+#[derive(Debug)]
 pub struct NoneSignature;
 
 impl Algorithm for NoneSignature {
@@ -61,6 +62,7 @@ impl SignatureAlgorithm for NoneSignature {
 }
 
 /// Ed25519 signature.
+#[derive(Debug)]
 pub struct Ed25519Signature;
 
 impl Algorithm for Ed25519Signature {
@@ -122,6 +124,7 @@ impl SignatureAlgorithm for Ed25519Signature {
 }
 
 /// ECDSA-P256 signature.
+#[derive(Debug)]
 pub struct EcdsaP256Signature;
 
 impl Algorithm for EcdsaP256Signature {
@@ -167,6 +170,7 @@ impl SignatureAlgorithm for EcdsaP256Signature {
 }
 
 /// ECDSA-P384 signature.
+#[derive(Debug)]
 pub struct EcdsaP384Signature;
 
 impl Algorithm for EcdsaP384Signature {
@@ -212,6 +216,7 @@ impl SignatureAlgorithm for EcdsaP384Signature {
 }
 
 /// RSA-PSS-2048 signature.
+#[derive(Debug)]
 pub struct RsaPss2048Signature;
 
 impl Algorithm for RsaPss2048Signature {
@@ -272,6 +277,7 @@ impl SignatureAlgorithm for RsaPss2048Signature {
 }
 
 /// RSA-PSS-4096 signature.
+#[derive(Debug)]
 pub struct RsaPss4096Signature;
 
 impl Algorithm for RsaPss4096Signature {

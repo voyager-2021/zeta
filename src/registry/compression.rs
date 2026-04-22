@@ -67,6 +67,7 @@ impl Compression {
 }
 
 /// No compression (pass-through).
+#[derive(Debug)]
 pub struct NoneCompression;
 
 impl Algorithm for NoneCompression {
@@ -90,6 +91,7 @@ impl CompressionAlgorithm for NoneCompression {
 }
 
 /// LZW compression implementation.
+#[derive(Debug)]
 pub struct LzwCompression;
 
 impl Algorithm for LzwCompression {
@@ -195,6 +197,7 @@ impl CompressionAlgorithm for LzwCompression {
 }
 
 /// RLE (Run-Length Encoding) compression.
+#[derive(Debug)]
 pub struct RleCompression;
 
 impl Algorithm for RleCompression {
@@ -252,6 +255,7 @@ impl CompressionAlgorithm for RleCompression {
 }
 
 /// Zstandard compression.
+#[derive(Debug)]
 pub struct ZstdCompression;
 
 impl Algorithm for ZstdCompression {
@@ -277,6 +281,7 @@ impl CompressionAlgorithm for ZstdCompression {
 }
 
 /// LZ4 compression.
+#[derive(Debug)]
 pub struct Lz4Compression;
 
 impl Algorithm for Lz4Compression {
@@ -292,7 +297,7 @@ impl Algorithm for Lz4Compression {
 impl CompressionAlgorithm for Lz4Compression {
     fn compress(&self, data: &[u8]) -> Result<Vec<u8>> {
         let mut encoder = lz4::EncoderBuilder::new()
-            .level(Compression::Lz4.default_level())
+            .level(Compression::Lz4.default_level() as u32)
             .build(Vec::new())
             .map_err(|e| Error::compression(format!("LZ4 encoder creation failed: {}", e)))?;
 
@@ -319,6 +324,7 @@ impl CompressionAlgorithm for Lz4Compression {
 }
 
 /// Brotli compression.
+#[derive(Debug)]
 pub struct BrotliCompression;
 
 impl Algorithm for BrotliCompression {
@@ -356,6 +362,7 @@ impl CompressionAlgorithm for BrotliCompression {
 }
 
 /// Zlib compression.
+#[derive(Debug)]
 pub struct ZlibCompression;
 
 impl Algorithm for ZlibCompression {
@@ -391,6 +398,7 @@ impl CompressionAlgorithm for ZlibCompression {
 }
 
 /// Gzip compression.
+#[derive(Debug)]
 pub struct GzipCompression;
 
 impl Algorithm for GzipCompression {
@@ -426,6 +434,7 @@ impl CompressionAlgorithm for GzipCompression {
 }
 
 /// Bzip2 compression.
+#[derive(Debug)]
 pub struct Bzip2Compression;
 
 impl Algorithm for Bzip2Compression {
@@ -461,6 +470,7 @@ impl CompressionAlgorithm for Bzip2Compression {
 }
 
 /// LZMA compression.
+#[derive(Debug)]
 pub struct LzmaCompression;
 
 impl Algorithm for LzmaCompression {
@@ -500,6 +510,7 @@ impl CompressionAlgorithm for LzmaCompression {
 }
 
 /// LZMA2 compression.
+#[derive(Debug)]
 pub struct Lzma2Compression;
 
 impl Algorithm for Lzma2Compression {
@@ -540,6 +551,7 @@ impl CompressionAlgorithm for Lzma2Compression {
 }
 
 /// Snappy compression.
+#[derive(Debug)]
 pub struct SnappyCompression;
 
 impl Algorithm for SnappyCompression {
@@ -576,30 +588,3 @@ impl CompressionAlgorithm for SnappyCompression {
     }
 }
 
-/// LZO compression (requires lzo feature).
-#[cfg(feature = "lzo")]
-pub struct LzoCompression;
-
-#[cfg(feature = "lzo")]
-impl Algorithm for LzoCompression {
-    fn id(&self) -> u16 {
-        Compression::Lzo as u16
-    }
-
-    fn name(&self) -> &'static str {
-        "lzo"
-    }
-}
-
-#[cfg(feature = "lzo")]
-impl CompressionAlgorithm for LzoCompression {
-    fn compress(&self, data: &[u8]) -> Result<Vec<u8>> {
-        lzo::compress(data, lzo::CompressLevel::Default)
-            .map_err(|e| Error::compression(format!("LZO compression failed: {:?}", e)))
-    }
-
-    fn decompress(&self, data: &[u8], uncompressed_size: usize) -> Result<Vec<u8>> {
-        lzo::decompress(data, uncompressed_size)
-            .map_err(|e| Error::compression(format!("LZO decompression failed: {:?}", e)))
-    }
-}

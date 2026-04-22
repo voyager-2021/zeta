@@ -6,7 +6,7 @@ use crate::format::footer::Footer;
 use crate::format::header::FileHeader;
 use crate::format::index::IndexBlock;
 use crate::format::stream_dir::StreamDir;
-use crate::format::Deserialize;
+use crate::format::{Deserialize, Serialize};
 use crate::pipeline::decoder::{ChunkDecoder, DecodeResult, StreamingDecoder};
 use crate::pipeline::PipelineConfig;
 use crate::types::{ChunkSequence, StreamId};

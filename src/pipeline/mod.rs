@@ -22,14 +22,14 @@ use crate::types::ChunkFlags;
 /// Pipeline configuration for encoding/decoding.
 #[derive(Debug, Clone)]
 pub struct PipelineConfig {
-    /// Compression algorithm
-    pub compression: Option<Box<dyn CompressionAlgorithm>>,
-    /// Encryption algorithm
-    pub encryption: Option<Box<dyn EncryptionAlgorithm>>,
-    /// Delta encoding algorithm
-    pub delta: Option<Box<dyn DeltaAlgorithm>>,
-    /// Hash algorithm for integrity
-    pub hash: Option<Box<dyn HashAlgorithm>>,
+    /// Compression algorithm ID (0 = none)
+    pub compression_id: u16,
+    /// Encryption algorithm ID (0 = none)
+    pub encryption_id: u16,
+    /// Delta encoding algorithm ID (0 = none)
+    pub delta_id: u16,
+    /// Hash algorithm ID for integrity (0 = none)
+    pub hash_id: u16,
     /// Encryption key
     pub key: Option<Vec<u8>>,
     /// Verify before decompress (security default)
@@ -39,10 +39,10 @@ pub struct PipelineConfig {
 impl Default for PipelineConfig {
     fn default() -> Self {
         Self {
-            compression: None,
-            encryption: None,
-            delta: None,
-            hash: None,
+            compression_id: 0,
+            encryption_id: 0,
+            delta_id: 0,
+            hash_id: 0,
             key: None,
             verify_before_decompress: true,
         }
@@ -55,28 +55,28 @@ impl PipelineConfig {
         Self::default()
     }
 
-    /// Set compression algorithm.
-    pub fn with_compression(mut self, algo: Box<dyn CompressionAlgorithm>) -> Self {
-        self.compression = Some(algo);
+    /// Set compression algorithm by ID.
+    pub fn with_compression(mut self, id: u16) -> Self {
+        self.compression_id = id;
         self
     }
 
-    /// Set encryption algorithm.
-    pub fn with_encryption(mut self, algo: Box<dyn EncryptionAlgorithm>, key: Vec<u8>) -> Self {
-        self.encryption = Some(algo);
+    /// Set encryption algorithm by ID and key.
+    pub fn with_encryption(mut self, id: u16, key: Vec<u8>) -> Self {
+        self.encryption_id = id;
         self.key = Some(key);
         self
     }
 
-    /// Set delta encoding algorithm.
-    pub fn with_delta(mut self, algo: Box<dyn DeltaAlgorithm>) -> Self {
-        self.delta = Some(algo);
+    /// Set delta encoding algorithm by ID.
+    pub fn with_delta(mut self, id: u16) -> Self {
+        self.delta_id = id;
         self
     }
 
-    /// Set hash algorithm.
-    pub fn with_hash(mut self, algo: Box<dyn HashAlgorithm>) -> Self {
-        self.hash = Some(algo);
+    /// Set hash algorithm by ID.
+    pub fn with_hash(mut self, id: u16) -> Self {
+        self.hash_id = id;
         self
     }
 
@@ -91,16 +91,16 @@ impl PipelineConfig {
 pub fn compute_chunk_flags(config: &PipelineConfig, is_final: bool) -> ChunkFlags {
     let mut flags = ChunkFlags::empty();
 
-    if config.compression.is_some() {
+    if config.compression_id != 0 {
         flags.set(ChunkFlags::COMPRESSED);
     }
 
-    if config.encryption.is_some() {
+    if config.encryption_id != 0 {
         flags.set(ChunkFlags::ENCRYPTED);
         flags.set(ChunkFlags::AUTH_TAG_PRESENT);
     }
 
-    if config.delta.is_some() {
+    if config.delta_id != 0 {
         flags.set(ChunkFlags::DELTA_ENCODED);
     }
 

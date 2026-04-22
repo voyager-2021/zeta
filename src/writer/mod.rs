@@ -4,7 +4,6 @@ pub mod builder;
 pub mod stream;
 
 pub use builder::WriterBuilder;
-pub use stream::StreamWriter;
 
 use crate::error::{Error, Result};
 use crate::format::chunk::ChunkInfo;

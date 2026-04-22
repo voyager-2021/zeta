@@ -2,6 +2,7 @@
 
 use crate::error::{Error, Result};
 use crate::format::chunk::{ChunkHeader, ChunkInfo};
+use crate::format::Serialize;
 use crate::pipeline::PipelineConfig;
 use crate::registry::global_registry;
 use crate::types::ChunkFlags;
