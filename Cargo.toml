@@ -1,0 +1,95 @@
+[package]
+name = "zeta"
+version = "0.1.0"
+edition = "2021"
+authors = ["ZETA Contributors"]
+description = "Zero-Trust Extended Archive Format - high-performance container format"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/zeta-format/zeta"
+keywords = ["archive", "container", "encryption", "compression", "streaming"]
+categories = ["compression", "cryptography", "encoding"]
+rust-version = "1.70"
+
+[lib]
+name = "zeta"
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "zeta"
+path = "src/bin/zeta.rs"
+
+[features]
+default = ["cli"]
+cli = ["clap", "indicatif", "serde", "serde_json", "csv"]
+python = ["pyo3"]
+
+[dependencies]
+# Core
+bytes = "1.5"
+thiserror = "1.0"
+zerocopy = { version = "0.7", features = ["derive"] }
+byteorder = "1.5"
+uuid = { version = "1.6", features = ["v4"] }
+hex = "0.4"
+memmap2 = "0.9"
+crc32fast = "1.3"
+snap = "1.1"
+
+# Compression (Full Spec)
+zstd = "0.13"
+lz4 = "1.24"
+flate2 = "1.0"
+brotli = "3.4"
+bzip2 = "0.4"
+xz2 = "0.1"
+lzo = { version = "0.1", optional = true }
+
+# Cryptography
+aes-gcm = "0.10"
+chacha20poly1305 = "0.10"
+sha2 = "0.10"
+blake2 = "0.10"
+sha3 = "0.10"
+blake3 = "1.5"
+argon2 = "0.5"
+pbkdf2 = "0.12"
+scrypt = "0.11"
+hkdf = "0.12"
+ed25519-dalek = { version = "2.1", features = ["rand_core"] }
+p256 = { version = "0.13", features = ["ecdsa"] }
+p384 = { version = "0.13", features = ["ecdsa"] }
+rsa = { version = "0.9", features = ["sha2"] }
+rand = "0.8"
+
+# Concurrency
+rayon = "1.8"
+
+# CLI
+clap = { version = "4.4", features = ["derive"], optional = true }
+indicatif = { version = "0.17", optional = true }
+serde = { version = "1.0", features = ["derive"], optional = true }
+serde_json = { version = "1.0", optional = true }
+csv = { version = "1.3", optional = true }
+
+# Python bindings
+pyo3 = { version = "0.20", optional = true, features = ["extension-module"] }
+
+# Async (future use)
+futures = { version = "0.3", optional = true }
+tokio = { version = "1.35", optional = true, features = ["io-util"] }
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+proptest = "1.4"
+tempfile = "3.9"
+pretty_assertions = "1.4"
+hex-literal = "0.4"
+
+[[bench]]
+name = "zeta_bench"
+harness = false
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
