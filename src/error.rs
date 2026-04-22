@@ -192,6 +192,18 @@ where
     }
 }
 
+impl From<serde_json::Error> for Error {
+    fn from(e: serde_json::Error) -> Self {
+        Error::Custom(format!("JSON error: {}", e))
+    }
+}
+
+impl From<csv::Error> for Error {
+    fn from(e: csv::Error) -> Self {
+        Error::Custom(format!("CSV error: {}", e))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

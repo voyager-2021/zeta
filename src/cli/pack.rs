@@ -116,7 +116,7 @@ impl CompressionArg {
 }
 
 /// Encryption algorithm options.
-#[derive(Clone, Copy, Debug, clap::ValueEnum)]
+#[derive(Clone, Copy, Debug, PartialEq, clap::ValueEnum)]
 pub enum EncryptionArg {
     None,
     Aes256Gcm,

@@ -304,12 +304,11 @@ impl CompressionAlgorithm for Lz4Compression {
         std::io::Write::write_all(&mut encoder, data)
             .map_err(|e| Error::compression(format!("LZ4 compression failed: {}", e)))?;
 
-        let (result, err) = encoder.finish()
-            .map_err(|e| Error::compression(format!("LZ4 encoder finish failed: {}", e)))?;
-        match err {
-            Some(e) => Err(Error::compression(format!("LZ4 compression failed: {:?}", e))),
-            None => Ok(result),
+        let (result, finish_result) = encoder.finish();
+        if let Err(e) = finish_result {
+            return Err(Error::compression(format!("LZ4 encoder finish failed: {}", e)));
         }
+        Ok(result)
     }
 
     fn decompress(&self, data: &[u8], uncompressed_size: usize) -> Result<Vec<u8>> {
