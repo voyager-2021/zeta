@@ -240,16 +240,17 @@ impl SignatureAlgorithm for RsaPss2048Signature {
             pkcs8::DecodePrivateKey,
             pss::SigningKey,
             sha2::Sha256,
-            signature::Signer,
             RsaPrivateKey,
         };
+        use signature::RandomizedSigner;
 
         let private_key = RsaPrivateKey::from_pkcs8_der(key)
             .map_err(|e| Error::InvalidSignature(format!("Invalid RSA private key: {:?}", e)))?;
 
         let signing_key = SigningKey::<Sha256>::new(private_key);
+        let mut rng = rand::thread_rng();
         let signature = signing_key
-            .sign(data)
+            .sign_with_rng(&mut rng, data)
             .map_err(|e| Error::InvalidSignature(format!("RSA-PSS signing failed: {:?}", e)))?;
 
         Ok(signature.to_vec())

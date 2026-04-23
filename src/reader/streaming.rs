@@ -244,10 +244,11 @@ impl<R: Read> StreamingReader<R> {
     {
         let mut all_results = Vec::new();
 
-        for stream in &self.stream_dir.streams {
-            self.select_stream(stream.id)?;
+        let stream_ids: Vec<StreamId> = self.stream_dir.streams.iter().map(|s| s.id).collect();
+        for stream_id in stream_ids {
+            self.select_stream(stream_id)?;
             let chunks = self.read_to_end()?;
-            all_results.push((stream.id, chunks));
+            all_results.push((stream_id, chunks));
         }
 
         Ok(all_results)

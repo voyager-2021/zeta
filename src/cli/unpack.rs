@@ -112,7 +112,7 @@ pub fn run(args: UnpackArgs, verbose: bool) -> Result<()> {
 
         print_verbose(verbose, format!("Extracting: {}", stream.name));
 
-        match extract_stream(&args.file, &stream.name, stream.id, &args) {
+        match extract_stream(&args.input, &stream.name, stream.id, &args) {
             Ok(bytes) => {
                 total_bytes += bytes;
                 extracted_count += 1;
@@ -188,7 +188,7 @@ fn extract_stream(
     }
 
     // Open the container and extract stream data
-    let data = if args.key.is_some() {
+    let data = if args.key_file.is_some() {
         // Use indexed reader for random access
         let file = File::open(container_path)?;
         let reader = Reader::open(file)?;
