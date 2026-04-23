@@ -148,13 +148,14 @@ impl<R: Read + Seek> IndexedReader<R> {
         let entry = self
             .index
             .find_chunk(stream_id, sequence)
+            .cloned()
             .ok_or_else(|| Error::custom(format!(
                 "Chunk not in index: stream {} seq {}",
                 stream_id, sequence
             )))?;
 
         // Read chunk
-        let result = self.read_chunk_at(entry)?;
+        let result = self.read_chunk_at(&entry)?;
 
         // Cache result
         if self.cache.len() >= self.cache_size {
@@ -283,12 +284,18 @@ impl<R: Read + Seek> IndexedReader<R> {
     pub fn read_all(&mut self) -> Result<HashMap<StreamId, Vec<u8>>> {
         let mut result = HashMap::new();
 
-        for stream in &self.stream_dir.streams {
-            let data = self.read_stream_full(stream.id)?;
-            result.insert(stream.id, data);
+        let stream_ids: Vec<StreamId> = self.stream_dir.streams.iter().map(|s| s.id).collect();
+        for stream_id in stream_ids {
+            let data = self.read_stream_full(stream_id)?;
+            result.insert(stream_id, data);
         }
 
         Ok(result)
+    }
+
+    /// Consume the indexed reader and return the underlying reader.
+    pub fn into_reader(self) -> R {
+        self.reader
     }
 }
 

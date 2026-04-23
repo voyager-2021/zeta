@@ -112,7 +112,7 @@ pub fn run(args: UnpackArgs, verbose: bool) -> Result<()> {
 
         print_verbose(verbose, format!("Extracting: {}", stream.name));
 
-        match extract_stream(&mut reader, stream, &args) {
+        match extract_stream(&args.file, &stream.name, stream.id, &args) {
             Ok(bytes) => {
                 total_bytes += bytes;
                 extracted_count += 1;
@@ -152,24 +152,25 @@ impl<R: std::io::Read + std::io::Seek> ReaderExt for Reader<R> {
 }
 
 /// Extract a single stream.
-fn extract_stream<R: std::io::Read + std::io::Seek>(
-    reader: &mut Reader<R>,
-    stream: &crate::format::stream_dir::StreamEntry,
+fn extract_stream(
+    container_path: &Path,
+    stream_name: &str,
+    stream_id: StreamId,
     args: &UnpackArgs,
 ) -> Result<u64> {
     // Determine output path
     let output_path = if args.flatten {
         // Flatten: just use the filename
-        let file_name = Path::new(&stream.name)
+        let file_name = Path::new(stream_name)
             .file_name()
             .ok_or_else(|| crate::Error::custom("Invalid stream name"))?;
         args.output.join(file_name)
     } else if args.preserve_structure {
         // Preserve structure: use full path
-        args.output.join(&stream.name)
+        args.output.join(stream_name)
     } else {
         // Default: sanitize and use relative path
-        let safe_name = sanitize_filename(&stream.name);
+        let safe_name = sanitize_filename(stream_name);
         args.output.join(safe_name)
     };
 
@@ -186,28 +187,26 @@ fn extract_stream<R: std::io::Read + std::io::Seek>(
         fs::create_dir_all(parent)?;
     }
 
-    // Extract stream data
-    let data = if reader.has_index() {
+    // Open the container and extract stream data
+    let data = if args.key.is_some() {
         // Use indexed reader for random access
+        let file = File::open(container_path)?;
+        let reader = Reader::open(file)?;
         let mut indexed = reader.into_indexed()?;
-        indexed.read_stream_full(stream.id)?
+        indexed.read_stream_full(stream_id)?
     } else {
         // Use streaming reader
+        let file = File::open(container_path)?;
+        let reader = Reader::open(file)?;
         let mut streaming = reader.into_streaming()?;
-        streaming.read_stream(stream.id)?
+        streaming.read_stream(stream_id)?
     };
 
     // Write to file
     let mut output_file = File::create(&output_path)?;
     output_file.write_all(&data)?;
 
-    let bytes_written = data.len() as u64;
-
-    // We consumed the reader, so we need to reopen it for the next stream
-    // This is a limitation of the current API - in practice, we'd want to
-    // keep the reader open or use a different approach
-
-    Ok(bytes_written)
+    Ok(data.len() as u64)
 }
 
 /// Sanitize a filename for safe extraction.

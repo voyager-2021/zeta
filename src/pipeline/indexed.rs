@@ -99,12 +99,13 @@ impl<R: Read + Seek> IndexedChunkReader<R> {
         let entry = self
             .index
             .find_chunk(stream_id, sequence)
+            .cloned()
             .ok_or_else(|| Error::custom(format!(
                 "Chunk not found in index: stream {} sequence {}",
                 stream_id, sequence
             )))?;
 
-        self.read_chunk_at(entry)
+        self.read_chunk_at(&entry)
     }
 
     /// Read a chunk at a specific index entry.
@@ -154,10 +155,15 @@ impl<R: Read + Seek> IndexedChunkReader<R> {
 
     /// Read all chunks from a stream.
     pub fn read_stream(&mut self, stream_id: StreamId) -> Result<Vec<DecodeResult>> {
-        let entries = self.index.entries_for_stream(stream_id);
+        let entries: Vec<IndexEntry> = self
+            .index
+            .entries_for_stream(stream_id)
+            .into_iter()
+            .cloned()
+            .collect();
 
         let mut results = Vec::with_capacity(entries.len());
-        for entry in entries {
+        for entry in &entries {
             let result = self.read_chunk_at(entry)?;
             results.push(result);
         }

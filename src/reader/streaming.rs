@@ -68,8 +68,8 @@ impl<R: Read + Seek> StreamingReader<R> {
 
     /// Set pipeline configuration.
     pub fn with_config(mut self, config: PipelineConfig) -> Self {
+        self.decoder = StreamingDecoder::new(config.clone());
         self.config = config;
-        self.decoder = StreamingDecoder::new(config);
         self
     }
 
@@ -238,7 +238,10 @@ impl<R: Read> StreamingReader<R> {
     /// Iterate over all chunks in all streams.
     ///
     /// This reads through the entire file sequentially.
-    pub fn read_all(&mut self) -> Result<Vec<(StreamId, Vec<DecodeResult>)>> {
+    pub fn read_all(&mut self) -> Result<Vec<(StreamId, Vec<DecodeResult>)>>
+    where
+        R: Seek,
+    {
         let mut all_results = Vec::new();
 
         for stream in &self.stream_dir.streams {
@@ -271,6 +274,11 @@ impl<R: Read> StreamingReader<R> {
     /// Get the current chunk sequence.
     pub fn current_sequence(&self) -> ChunkSequence {
         self.current_sequence
+    }
+
+    /// Consume the streaming reader and return the underlying reader.
+    pub fn into_reader(self) -> R {
+        self.reader
     }
 }
 
@@ -311,8 +319,8 @@ impl StreamingReaderBuilder {
     /// Build the reader.
     pub fn build<R: Read + Seek>(self, reader: R) -> Result<StreamingReader<R>> {
         let mut streaming_reader = StreamingReader::new(reader)?;
+        streaming_reader.decoder = StreamingDecoder::new(self.config.clone());
         streaming_reader.config = self.config;
-        streaming_reader.decoder = StreamingDecoder::new(self.config);
         streaming_reader.key = self.key;
         Ok(streaming_reader)
     }

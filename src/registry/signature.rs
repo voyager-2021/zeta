@@ -165,7 +165,7 @@ impl SignatureAlgorithm for EcdsaP256Signature {
         verifying_key
             .verify(data, &sig)
             .map_err(|_| Error::SignatureVerification {
-                algorithm: Signature::EcdsaP256 as u16,
+                algorithm: super::Signature::EcdsaP256 as u16,
             })
     }
 
@@ -211,7 +211,7 @@ impl SignatureAlgorithm for EcdsaP384Signature {
         verifying_key
             .verify(data, &sig)
             .map_err(|_| Error::SignatureVerification {
-                algorithm: Signature::EcdsaP384 as u16,
+                algorithm: super::Signature::EcdsaP384 as u16,
             })
     }
 
@@ -237,6 +237,7 @@ impl Algorithm for RsaPss2048Signature {
 impl SignatureAlgorithm for RsaPss2048Signature {
     fn sign(&self, data: &[u8], key: &[u8]) -> Result<Vec<u8>> {
         use rsa::{
+            pkcs8::DecodePrivateKey,
             pss::SigningKey,
             sha2::Sha256,
             signature::Signer,
@@ -255,6 +256,7 @@ impl SignatureAlgorithm for RsaPss2048Signature {
     }
 
     fn verify(&self, data: &[u8], signature: &[u8], key: &[u8]) -> Result<()> {
+        use pkcs8::DecodePublicKey;
         use rsa::{
             pss::VerifyingKey,
             sha2::Sha256,
@@ -272,7 +274,7 @@ impl SignatureAlgorithm for RsaPss2048Signature {
         verifying_key
             .verify(data, &sig)
             .map_err(|_| Error::SignatureVerification {
-                algorithm: Signature::RsaPss2048 as u16,
+                algorithm: super::Signature::RsaPss2048 as u16,
             })
     }
 
@@ -298,6 +300,7 @@ impl Algorithm for RsaPss4096Signature {
 impl SignatureAlgorithm for RsaPss4096Signature {
     fn sign(&self, data: &[u8], key: &[u8]) -> Result<Vec<u8>> {
         use rsa::{
+            pkcs8::DecodePrivateKey,
             pss::SigningKey,
             sha2::Sha256,
             signature::Signer,
@@ -317,6 +320,7 @@ impl SignatureAlgorithm for RsaPss4096Signature {
 
     fn verify(&self, data: &[u8], signature: &[u8], key: &[u8]) -> Result<()> {
         use rsa::{
+            pkcs8::DecodePublicKey,
             pss::VerifyingKey,
             sha2::Sha256,
             signature::Verifier,
@@ -333,7 +337,7 @@ impl SignatureAlgorithm for RsaPss4096Signature {
         verifying_key
             .verify(data, &sig)
             .map_err(|_| Error::SignatureVerification {
-                algorithm: Signature::RsaPss4096 as u16,
+                algorithm: super::Signature::RsaPss4096 as u16,
             })
     }
 
