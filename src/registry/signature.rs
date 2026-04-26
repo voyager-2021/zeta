@@ -242,7 +242,7 @@ impl SignatureAlgorithm for RsaPss2048Signature {
             sha2::Sha256,
             RsaPrivateKey,
         };
-        use signature::RandomizedSigner;
+        use signature::{RandomizedSigner, SignatureEncoding};
 
         let private_key = RsaPrivateKey::from_pkcs8_der(key)
             .map_err(|e| Error::InvalidSignature(format!("Invalid RSA private key: {:?}", e)))?;
@@ -250,15 +250,15 @@ impl SignatureAlgorithm for RsaPss2048Signature {
         let signing_key = SigningKey::<Sha256>::new(private_key);
         let mut rng = rand::thread_rng();
         let signature = signing_key
-            .sign_with_rng(&mut rng, data)
+            .try_sign_with_rng(&mut rng, data)
             .map_err(|e| Error::InvalidSignature(format!("RSA-PSS signing failed: {:?}", e)))?;
 
-        Ok(signature.to_vec())
+        Ok(signature.to_bytes().to_vec())
     }
 
     fn verify(&self, data: &[u8], signature: &[u8], key: &[u8]) -> Result<()> {
-        use pkcs8::DecodePublicKey;
         use rsa::{
+            pkcs8::DecodePublicKey,
             pss::VerifyingKey,
             sha2::Sha256,
             signature::Verifier,
@@ -270,7 +270,7 @@ impl SignatureAlgorithm for RsaPss2048Signature {
 
         let verifying_key = VerifyingKey::<Sha256>::new(public_key);
         let sig = rsa::pss::Signature::try_from(signature)
-            .map_err(|e| Error::InvalidSignature(format!("Invalid RSA-PSS signature: {:?}", e)))?;
+            .map_err(|_| Error::InvalidSignature("Invalid RSA-PSS signature".to_string()))?;
 
         verifying_key
             .verify(data, &sig)
@@ -307,16 +307,18 @@ impl SignatureAlgorithm for RsaPss4096Signature {
             signature::Signer,
             RsaPrivateKey,
         };
+        use signature::{RandomizedSigner, SignatureEncoding};
 
         let private_key = RsaPrivateKey::from_pkcs8_der(key)
             .map_err(|e| Error::InvalidSignature(format!("Invalid RSA private key: {:?}", e)))?;
 
         let signing_key = SigningKey::<Sha256>::new(private_key);
+        let mut rng = rand::thread_rng();
         let signature = signing_key
-            .sign(data)
+            .try_sign_with_rng(&mut rng, data)
             .map_err(|e| Error::InvalidSignature(format!("RSA-PSS signing failed: {:?}", e)))?;
 
-        Ok(signature.to_vec())
+        Ok(signature.to_bytes().to_vec())
     }
 
     fn verify(&self, data: &[u8], signature: &[u8], key: &[u8]) -> Result<()> {
@@ -333,7 +335,7 @@ impl SignatureAlgorithm for RsaPss4096Signature {
 
         let verifying_key = VerifyingKey::<Sha256>::new(public_key);
         let sig = rsa::pss::Signature::try_from(signature)
-            .map_err(|e| Error::InvalidSignature(format!("Invalid RSA-PSS signature: {:?}", e)))?;
+            .map_err(|_| Error::InvalidSignature("Invalid RSA-PSS signature".to_string()))?;
 
         verifying_key
             .verify(data, &sig)

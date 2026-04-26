@@ -9,22 +9,27 @@
 //! ## Example
 //!
 //! ```rust,no_run
-//! use zeta::{Writer, Reader, Compression, Encryption};
+//! use zeta::{Writer, Reader, WriterBuilder};
+//! use zeta::registry::compression::ZstdCompression;
+//! use std::fs::File;
 //!
 //! // Create a container
-//! let mut writer = Writer::new("output.zeta")
-//!     .compression(Compression::Zstd)
-//!     .encryption(Encryption::Aes256Gcm, &key)
-//!     .create_stream("data.txt");
+//! let file = File::create("output.zeta")?;
+//! let mut writer = WriterBuilder::new()
+//!     .compression(ZstdCompression)
+//!     .create(file)?;
 //!
+//! writer.create_stream("data.txt");
 //! writer.write_all(b"Hello, ZETA!")?;
 //! writer.finish()?;
 //!
 //! // Read a container
-//! let reader = Reader::open("output.zeta")?;
+//! let file = File::open("output.zeta")?;
+//! let reader = Reader::open(file)?;
 //! for stream in reader.streams() {
-//!     let data = reader.read_stream(stream.id())?;
+//!     println!("Stream: {}", stream.name);
 //! }
+//! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```
 
 #![warn(missing_docs)]

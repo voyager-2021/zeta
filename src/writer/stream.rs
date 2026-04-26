@@ -170,7 +170,9 @@ impl Chunker {
     /// Update rolling hash.
     fn update_hash(&self, hash: u32, out_byte: u8, in_byte: u8) -> u32 {
         // Simplified rolling hash: remove old byte, add new byte
-        let out_contrib = (out_byte as u32).wrapping_mul(31_u32.pow(self.window_size as u32));
+        let pow = self.window_size as u32;
+        let multiplier = if pow > 1 { 31_u32.wrapping_pow(pow - 1) } else { 1 };
+        let out_contrib = (out_byte as u32).wrapping_mul(multiplier);
         hash.wrapping_sub(out_contrib)
             .wrapping_mul(31)
             .wrapping_add(in_byte as u32)

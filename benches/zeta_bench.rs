@@ -25,7 +25,7 @@ fn bench_compression(c: &mut Criterion) {
 fn bench_container_creation(c: &mut Criterion) {
     c.bench_function("container_create_small", |b| {
         b.iter(|| {
-            let cursor = Cursor::new(Vec::new());
+            let cursor = Cursor::new(Vec::<u8>::new());
             criterion::black_box(cursor);
         });
     });

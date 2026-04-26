@@ -203,6 +203,11 @@ impl<W: Write + Seek> Writer<W> {
         Ok(())
     }
 
+    /// Get a reference to the file header.
+    pub fn header(&self) -> &FileHeader {
+        &self.header
+    }
+
     /// Finish writing and write footer.
     ///
     /// This writes the stream directory, index (if enabled), and footer.

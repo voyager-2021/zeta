@@ -230,7 +230,7 @@ fn test_writer_with_index() {
         .create(cursor)
         .unwrap();
 
-    assert!(writer.header.flags.has_index());
+    assert!(writer.header().flags.has_index());
 }
 
 #[test]

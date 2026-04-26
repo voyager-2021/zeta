@@ -180,7 +180,12 @@ impl ChunkEncoder {
 
     /// Encode without delta encoding.
     pub fn encode_simple(&self, data: &[u8]) -> Result<EncodeResult> {
-        self.encode(data, None)
+        // Temporarily set is_final to true for simple encoding
+        let mut options = self.options.clone();
+        options.is_final = true;
+        
+        let encoder = ChunkEncoder::new(self.config.clone(), options);
+        encoder.encode(data, None)
     }
 }
 
@@ -215,8 +220,6 @@ impl BatchEncoder {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::registry::compression::NoneCompression;
-    use crate::registry::encryption::NoneEncryption;
 
     #[test]
     fn test_chunk_encoder_simple() {

@@ -14,13 +14,17 @@ use std::io::{Seek, Write};
 /// # Example
 ///
 /// ```rust,no_run
-/// use zeta::{WriterBuilder, Compression, Encryption};
+/// use zeta::WriterBuilder;
+/// use zeta::registry::compression::ZstdCompression;
+/// use std::fs::File;
 ///
-/// let writer = WriterBuilder::new()
-///     .compression(Compression::Zstd)
-///     .encryption(Encryption::Aes256Gcm, key)
-///     .create(&mut file)
-///     .unwrap();
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let file = File::create("output.zeta")?;
+/// let mut writer = WriterBuilder::new()
+///     .compression(ZstdCompression)
+///     .create(file)?;
+/// # Ok(())
+/// # }
 /// ```
 #[derive(Debug, Clone)]
 pub struct WriterBuilder {
