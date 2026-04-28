@@ -145,9 +145,10 @@ impl<R: Read> StreamingReader<R> {
     ///
     /// Returns `Ok(None)` when the stream ends.
     pub fn read_next(&mut self) -> Result<Option<DecodeResult>> {
-        let stream_id = self
-            .current_stream
-            .ok_or_else(|| Error::custom("No stream selected"))?;
+        let stream_id = match self.current_stream {
+            Some(id) => id,
+            None => return Ok(None), // No stream selected, return None gracefully
+        };
 
         // Try to read chunk header
         let chunk_header = match ChunkHeader::deserialize(&mut self.reader) {
@@ -225,12 +226,17 @@ impl<R: Read> StreamingReader<R> {
     where
         R: Seek,
     {
+        eprintln!("DEBUG read_stream: selecting stream {}", stream_id);
         self.select_stream(stream_id)?;
+        eprintln!("DEBUG read_stream: stream selected, current_stream={:?}", self.current_stream);
 
         let mut result = Vec::new();
+        eprintln!("DEBUG read_stream: entering loop");
         while let Some(chunk_result) = self.read_next()? {
+            eprintln!("DEBUG read_stream: got chunk with {} bytes", chunk_result.data.len());
             result.extend_from_slice(&chunk_result.data);
         }
+        eprintln!("DEBUG read_stream: loop done, total {} bytes", result.len());
 
         Ok(result)
     }

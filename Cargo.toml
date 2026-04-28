@@ -18,6 +18,10 @@ crate-type = ["cdylib", "rlib"]
 name = "zeta"
 path = "src/bin/zeta.rs"
 
+[[example]]
+name = "file_io_demo"
+path = "examples/file_io_demo.rs"
+
 [features]
 default = ["cli"]
 cli = ["clap", "indicatif", "serde", "serde_json", "csv"]

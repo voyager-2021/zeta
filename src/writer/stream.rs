@@ -227,8 +227,20 @@ impl<'a, W: Write + Seek> ContentDefinedWriter<'a, W> {
 
     /// Finish writing.
     pub fn finish(mut self) -> Result<()> {
+        // Only write remaining buffer if stream is still active
+        // (stream may have already been finished by a previous write_chunk with is_final=true)
         if !self.buffer.is_empty() {
-            self.writer.write_chunk(&self.buffer, true)?;
+            // Try to write, but ignore "No stream active" error since stream may already be finished
+            match self.writer.write_chunk(&self.buffer, true) {
+                Ok(()) => {}
+                Err(e) => {
+                    let err_msg = format!("{}", e);
+                    if !err_msg.contains("No stream active") {
+                        return Err(e);
+                    }
+                    // Stream already finished, ignore remaining buffer
+                }
+            }
         }
         Ok(())
     }

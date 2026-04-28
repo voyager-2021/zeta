@@ -196,10 +196,17 @@ fn extract_stream(
         indexed.read_stream_full(stream_id)?
     } else {
         // Use streaming reader
+        eprintln!("DEBUG: Opening container: {:?}", container_path);
         let file = File::open(container_path)?;
         let reader = Reader::open(file)?;
+        eprintln!("DEBUG: Reader opened, stream_id={}", stream_id);
         let mut streaming = reader.into_streaming()?;
-        streaming.read_stream(stream_id)?
+        eprintln!("DEBUG: Got streaming reader");
+        streaming.select_stream(stream_id)?;
+        eprintln!("DEBUG: Stream selected");
+        let data = streaming.read_stream(stream_id)?;
+        eprintln!("DEBUG: Read {} bytes", data.len());
+        data
     };
 
     // Write to file

@@ -111,6 +111,8 @@ impl<W: Write + Seek> Writer<W> {
     ///
     /// The data is processed through the pipeline (delta, compress, encrypt).
     pub fn write_chunk(&mut self, data: &[u8], is_final: bool) -> Result<()> {
+        eprintln!("DEBUG write_chunk: current_stream={:?}, data.len={}, is_final={}", 
+                 self.current_stream.is_some(), data.len(), is_final);
         let state = self
             .current_stream
             .as_mut()
@@ -178,14 +180,12 @@ impl<W: Write + Seek> Writer<W> {
         let chunk_size = crate::constants::DEFAULT_CHUNK_SIZE;
 
         if data.len() <= chunk_size {
-            // Single chunk
-            self.write_chunk(data, true)?;
+            // Single chunk - don't mark as final, let caller finish the stream
+            self.write_chunk(data, false)?;
         } else {
-            // Multiple chunks
-            let chunks: Vec<&[u8]> = data.chunks(chunk_size).collect();
-            for (i, chunk_data) in chunks.iter().enumerate() {
-                let is_final = i == chunks.len() - 1;
-                self.write_chunk(chunk_data, is_final)?;
+            // Multiple chunks - none are final, caller must finish the stream
+            for chunk_data in data.chunks(chunk_size) {
+                self.write_chunk(chunk_data, false)?;
             }
         }
 
