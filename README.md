@@ -14,18 +14,23 @@ A high-performance container format with zero-trust verification, pluggable comp
 ## Supported Algorithms
 
 ### Compression (15+ algorithms)
+
 - None, LZW, RLE, Zstandard, LZ4, Brotli, Zlib, Gzip, Bzip2, LZMA, Snappy, LZMA2
 
 ### Encryption
+
 - None, AES-256-GCM, ChaCha20-Poly1305
 
 ### Hashing
+
 - None, SHA-256, BLAKE2b, SHA-512, SHA3-256, SHA3-512, BLAKE3, SHAKE256
 
 ### Key Derivation
+
 - None, PBKDF2, Argon2id (recommended), Scrypt, HKDF
 
 ### Signatures
+
 - None, Ed25519, ECDSA-P256, ECDSA-P384, RSA-PSS-2048, RSA-PSS-4096
 
 ## Quick Start
@@ -124,36 +129,36 @@ cargo build --release --features cli
 
 ## Architecture
 
-```
+```plaintext
 ┌─────────────────────────────────────────────────────────────┐
 │                     ZETA Container                          │
 ├─────────────────────────────────────────────────────────────┤
-│  File Header (144 bytes)                                      │
-│  - Magic: "ZETA"                                              │
+│  File Header (144 bytes)                                    │
+│  - Magic: "ZETA"                                            │
 │  - Version: 1.0                                             │
-│  - Flags: Encrypted, Indexed, Streaming                      │
-│  - UUID, CRC32                                               │
+│  - Flags: Encrypted, Indexed, Streaming                     │
+│  - UUID, CRC32                                              │
 ├─────────────────────────────────────────────────────────────┤
-│  Stream Directory                                             │
-│  - Stream count, entries                                     │
-│  - Name, type, offset, size                                  │
+│  Stream Directory                                           │
+│  - Stream count, entries                                    │
+│  - Name, type, offset, size                                 │
 ├─────────────────────────────────────────────────────────────┤
-│  Chunk Stream Data                                            │
-│  - Chunk Header (68+ bytes)                                  │
-│  - Magic: "CHK1"                                             │
-│  - Flags, Stream ID, Sequence                                │
+│  Chunk Stream Data                                          │
+│  - Chunk Header (68+ bytes)                                 │
+│  - Magic: "CHK1"                                            │
+│  - Flags, Stream ID, Sequence                               │
 │  - Compression/Encryption/Hash/KDF IDs                      │
-│  - Nonce (16 bytes)                                          │
-│  - Payload (compressed/encrypted)                            │
-│  - Auth Tag (if encrypted)                                   │
+│  - Nonce (16 bytes)                                         │
+│  - Payload (compressed/encrypted)                           │
+│  - Auth Tag (if encrypted)                                  │
 ├─────────────────────────────────────────────────────────────┤
-│  Index Block (optional)                                       │
-│  - For random access                                         │
-│  - Stream ID → Chunk Sequence → File Offset                  │
+│  Index Block (optional)                                     │
+│  - For random access                                        │
+│  - Stream ID → Chunk Sequence → File Offset                 │
 ├─────────────────────────────────────────────────────────────┤
-│  Footer (required)                                            │
-│  - Magic: "ZET!"                                             │
-│  - Index offset, file hash                                   │
+│  Footer (required)                                          │
+│  - Magic: "ZET!"                                            │
+│  - Index offset, file hash                                  │
 │  - Signatures                                               │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -161,13 +166,23 @@ cargo build --release --features cli
 ## Processing Pipeline
 
 ### Encoding
-```
-Input → Delta Encoding → Compression → Encryption → Auth Tag
+
+```mermaid
+graph LR
+Input --> DeltaEncoding
+DeltaEncoding --> Compression
+Compression --> Encryption
+Encryption --> AuthTag
 ```
 
 ### Decoding (Verify-Before-Decompress)
-```
-Auth Tag → Decrypt → Verify → Decompress → Delta Decode
+
+```mermaid
+graph LR
+AuthTag --> Decrypt
+Decrypt --> Verify
+Verify --> Decompress
+Decompress --> DeltaDecode
 ```
 
 ## Security
